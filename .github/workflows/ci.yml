@@ -20,8 +20,8 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+- name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build shared package
         run: pnpm --filter @cinechan/shared build

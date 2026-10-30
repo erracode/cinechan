@@ -7,8 +7,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "livekit": "livekit-server --config docker/livekit.yaml"
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
@@ -17,6 +16,9 @@
     "typescript": "^5.8.2"
   },
   "packageManager": "pnpm@10.11.1",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "rollup", "sharp", "@esbuild/linux-x64-gnu", "@rollup/rollup-linux-x64-gnu"]
+  },
   "engines": {
     "node": ">=22.0.0"
   }
