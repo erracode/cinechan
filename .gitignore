@@ -23,6 +23,8 @@ build
 apps/agent/models/
 
 # Tooling caches / indexes
+.atl
+.opencode
 .qartez
 .ccc
 .wrangler
