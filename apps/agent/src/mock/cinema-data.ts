@@ -50,10 +50,10 @@ function seededUnit(seed: string): number {
 
 export const cinemas: Cinema[] = [
   {
-    id: "2400",
-    name: "Unicentro Pasto",
+    id: "1001",
+    name: "Plaza Norte",
     city: "Pasto",
-    address: "Unicentro Pasto, Av. Idema, Pasto, Nariño",
+    address: "Centro Comercial Plaza Norte, Av. 15, Pasto, Nari�o",
     phone: "+57 1 234 5678",
     services: [
       { id: "parking", name: "Parqueadero" },
@@ -72,10 +72,10 @@ export const cinemas: Cinema[] = [
     schedule: "Lun-Dom 10:00 - 23:00",
   },
   {
-    id: "2403",
-    name: "Llanogrande Palmira",
+    id: "1002",
+    name: "Parque Sur",
     city: "Palmira",
-    address: "Centro Comercial Llanogrande, Palmira, Valle del Cauca",
+    address: "Centro Comercial Parque Sur, Palmira, Valle del Cauca",
     phone: "+57 2 345 6789",
     services: [
       { id: "parking", name: "Parqueadero" },
@@ -90,10 +90,10 @@ export const cinemas: Cinema[] = [
     schedule: "Lun-Dom 11:00 - 22:00",
   },
   {
-    id: "2407",
-    name: "Micentro El Porvenir",
+    id: "1003",
+    name: "Portal Centro",
     city: "Bogotá",
-    address: "Centro Comercial Micentro, El Porvenir, Bogotá",
+    address: "Centro Comercial Portal Centro, Bogot�",
     phone: "+57 1 456 7890",
     services: [
       { id: "parking", name: "Parqueadero" },
@@ -113,8 +113,9 @@ export const cinemas: Cinema[] = [
 
 // ─── MOVIES ──────────────────────────────────────────────────────
 
-function poster(id: string, fileValue: string) {
-  return `https://assets.cinemark-core.com/5db771be04daec00076df3f5/vista/movies/${id}/common/${fileValue}`
+function poster(slug: string) {
+  // Local placeholder: no external CDN, no third-party asset ids.
+  return `/posters/${slug}.svg`
 }
 
 function fmt(raw: string[]): { formats: ScreenFormat[]; languages: Language[] } {
@@ -143,7 +144,7 @@ export const movies: Movie[] = [
     duration: 115, rating: "15-A" as AgeRating, genre: "Acción",
     director: "Simon McQuoid",
     actors: ["Karl Urban", "Hiroyuki Sanada", "Lewis Tan"],
-    posterUrl: poster("689276b23a6f89b4cb129eee", "mortal-kombat-2-105089-1778013920111"),
+    posterUrl: poster("mortal-kombat-2"),
     trailerUrl: "https://www.youtube.com/watch?v=YAmLVEh75Z8",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-05-07",
@@ -155,7 +156,7 @@ export const movies: Movie[] = [
     duration: 110, rating: "7-A" as AgeRating, genre: "Animación",
     director: "Kyle Balda",
     actors: ["Hugh Jackman", "Emma Thompson", "Regina Hall"],
-    posterUrl: poster("69bc2dec952d761a90a846ce", "las-ovejas-detectives-109659-1773943739814"),
+    posterUrl: poster("las-ovejas-detectives"),
     trailerUrl: "https://youtu.be/Kpf4pAQtWr4",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-05-07",
@@ -168,7 +169,7 @@ export const movies: Movie[] = [
     duration: 105, rating: "7-A" as AgeRating, genre: "Musical",
     director: "Billie Eilish, James Cameron",
     actors: ["Billie Eilish"],
-    posterUrl: poster("69dd77c739290b2820c59c31", "billie-eilish-tour-3d-109934-1776173972404"),
+    posterUrl: poster("billie-eilish-tour-3d"),
     trailerUrl: "https://www.youtube.com/watch?v=kZjuvQvsyQg",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-05-07",
@@ -181,7 +182,7 @@ export const movies: Movie[] = [
     duration: 105, rating: "7-A" as AgeRating, genre: "Documental",
     director: "Malcolm Venville",
     actors: ["Steve Harris", "Bruce Dickinson", "Adrian Smith", "Dave Murray"],
-    posterUrl: poster("69dd77c739290b2820c59c37", "iron-maiden-109737-1776173945490"),
+    posterUrl: poster("iron-maiden"),
     trailerUrl: "https://youtu.be/d2PMvKbkqJ8",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-05-07",
@@ -193,7 +194,7 @@ export const movies: Movie[] = [
     duration: 135, rating: "12-A" as AgeRating, genre: "Biografía",
     director: "Antoine Fuqua",
     actors: ["Laura Harrier", "Nia Long", "Miles Teller", "Colman Domingo", "Jaafar Jackson"],
-    posterUrl: poster("69a89f9ac2aea8f95819f304", "michael-108085-1773066570931"),
+    posterUrl: poster("michael"),
     trailerUrl: "https://www.youtube.com/watch?v=KQEMoeqKNUU",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-04-23",
@@ -206,7 +207,7 @@ export const movies: Movie[] = [
     duration: 120, rating: "TBC" as AgeRating, genre: "Comedia",
     director: "David Frankel",
     actors: ["Stanley Tucci", "Kenneth Branagh", "Emily Blunt", "Meryl Streep", "Anne Hathaway", "Lucy Liu"],
-    posterUrl: poster("69bc2dec952d761a90a846c8", "diablo-viste-a-la-moda-2-109658-1773943906092"),
+    posterUrl: poster("diablo-viste-a-la-moda-2"),
     trailerUrl: "https://youtu.be/OjKXbRJ4SVg",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-04-30",
@@ -218,7 +219,7 @@ export const movies: Movie[] = [
     duration: 95, rating: "7-A" as AgeRating, genre: "Aventuras",
     director: "Aaron Horvath, Michael Jelenic",
     actors: ["Jack Black", "Charlie Day", "Chris Pratt", "Anya Taylor-Joy", "Keegan-Michael Key"],
-    posterUrl: poster("699cb79550a33d4922bd73ce", "super-mario-galaxy-108980-1771881270577"),
+    posterUrl: poster("super-mario-galaxy"),
     trailerUrl: "https://www.youtube.com/watch?v=SnNHqJcQY9I",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-04-02",
@@ -230,7 +231,7 @@ export const movies: Movie[] = [
     duration: 135, rating: "18-A" as AgeRating, genre: "Terror",
     director: "Lee Cronin",
     actors: ["Jack Reynor", "May Calamawy", "Laia Costa"],
-    posterUrl: poster("69bc2dec952d761a90a846b5", "la-posesion-de-la-momia-109657-1776436364888"),
+    posterUrl: poster("la-posesion-de-la-momia"),
     trailerUrl: "https://www.youtube.com/watch?v=Ewp0-Qj2Tos",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-04-16",
@@ -242,7 +243,7 @@ export const movies: Movie[] = [
     duration: 100, rating: "TBC" as AgeRating, genre: "Drama",
     director: "Gooseworx",
     actors: ["Lizzie Freeman", "Michael Kovach", "Amanda Hufford"],
-    posterUrl: poster("69deb42f70b9fbe13890ef36", "the-amazing-digital-circus-109993-1776202999869"),
+    posterUrl: poster("the-amazing-digital-circus"),
     trailerUrl: "https://youtu.be/DLBjDbJ0AHE",
     isPremiere: true, isComingSoon: false,
     releaseDate: "2026-06-04",
@@ -254,7 +255,7 @@ export const movies: Movie[] = [
     duration: 225, rating: "7-A" as AgeRating, genre: "Musical",
     director: "HYBE / BIGHIT MUSIC",
     actors: ["Tomorrow X Together"],
-    posterUrl: poster("69f8c149e29e4b5b94de50f0", "txt-moa-con-in-japan-110287-1778008410221"),
+    posterUrl: poster("txt-moa-con-in-japan"),
     isPremiere: true, isComingSoon: false,
     releaseDate: "2026-05-24",
     ...fmt(["2D"]),
@@ -265,7 +266,7 @@ export const movies: Movie[] = [
     duration: 130, rating: "TBC" as AgeRating, genre: "Acción",
     director: "Jon Favreau",
     actors: ["Pedro Pascal", "Sigourney Weaver", "Jeremy Allen White"],
-    posterUrl: poster("69d6e03feecab883fbfefcd5", "the-mandalorian-and-grogu-109282-1775746951324"),
+    posterUrl: poster("the-mandalorian-and-grogu"),
     trailerUrl: "https://youtu.be/nPRO_iL3sxE",
     isPremiere: true, isComingSoon: false,
     releaseDate: "2026-05-21",
@@ -278,7 +279,7 @@ export const movies: Movie[] = [
     duration: 110, rating: "7-A" as AgeRating, genre: "Acción",
     director: "Tony Scott",
     actors: ["Tom Cruise", "Val Kilmer", "Kelly McGillis"],
-    posterUrl: poster("69ef7564fdc71a77de3d4196", "re-top-gun-ani-40-110232-1777300948868"),
+    posterUrl: poster("re-top-gun-ani"),
     trailerUrl: "https://youtu.be/9IqLepjMxEY",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-05-14",
@@ -292,7 +293,7 @@ export const movies: Movie[] = [
     duration: 130, rating: "12-A" as AgeRating, genre: "Acción",
     director: "Joseph Kosinski",
     actors: ["Tom Cruise", "Jennifer Connelly", "Miles Teller"],
-    posterUrl: poster("69ef986ecb225335d9704295", "re-top-gun-maverick-110233-1777312020618"),
+    posterUrl: poster("re-top-gun-maverick"),
     trailerUrl: "https://www.youtube.com/watch?v=wmLvWvHG4uM",
     isPremiere: false, isComingSoon: false,
     releaseDate: "2026-05-14",
@@ -313,15 +314,15 @@ export const ticketTypes: TicketType[] = [
 
 export const ticketPackages = [
   {
-    id: "2x1-davivienda", name: "2x1 Davivienda Mastercard",
-    description: "Paga 1 y lleva 2 con tarjetas de crédito Davivienda Mastercard",
+    id: "2x1-banco-a", name: "2x1 Banco A",
+    description: "Paga 1 y lleva 2 con tarjetas de cr�dito Banco A",
     price: 10.00,
     ticketTypes: [{ ticketTypeId: "general", quantity: 2 }],
     binDetails: ["543982", "547482", "559225", "517796", "524052", "526943", "540581", "540692", "541083", "541694", "547130", "547246", "549724", "552201", "552336", "552903", "554531", "549156"],
   },
   {
-    id: "2x1-amex", name: "2x1 American Express",
-    description: "Paga 1 boleto y lleva el segundo GRATIS con American Express",
+    id: "2x1-banco-b", name: "2x1 Banco B",
+    description: "Paga 1 boleto y lleva el segundo GRATIS con Banco B",
     price: 10.00,
     ticketTypes: [{ ticketTypeId: "general", quantity: 2 }],
     binDetails: ["377843", "377814", "377886", "379353", "377816", "377815", "377813", "377845", "377847", "379561", "379362", "379361", "379354"],
@@ -408,19 +409,19 @@ export const promotions: Promotion[] = [
     includes: ["1 boleto General", "Palomitas Medianas"],
   },
   {
-    id: "2x1-davivienda", name: "2x1 Davivienda Mastercard",
-    description: "2x1 en boletos con tarjetas de crédito Davivienda Mastercard",
+    id: "2x1-banco-a", name: "2x1 Banco A",
+    description: "2x1 en boletos con tarjetas de cr�dito Banco A",
     type: "bank",
-    bankBin: ["543982", "547482", "559225", "517796", "524052", "526943", "540581", "540692", "541083", "541694", "547130", "547246", "549724", "552201", "552336", "552903", "554531", "549156"],
-    bankName: "Davivienda",
+    bankBin: ["400001", "400002", "400003"],
+    bankName: "Banco A",
     includes: ["2 boletos General", "Aplican términos y condiciones"],
   },
   {
-    id: "2x1-amex", name: "2x1 American Express",
-    description: "2x1 en boletos con tarjetas American Express",
+    id: "2x1-banco-b", name: "2x1 Banco B",
+    description: "2x1 en boletos con tarjetas Banco B",
     type: "bank",
-    bankBin: ["377843", "377814", "377886", "379353", "377816", "377815", "377813", "377845", "377847", "379561", "379362", "379361", "379354"],
-    bankName: "American Express",
+    bankBin: ["400004", "400005", "400006"],
+    bankName: "Banco B",
     includes: ["2 boletos General", "Aplican términos y condiciones"],
   },
   {
@@ -431,7 +432,7 @@ export const promotions: Promotion[] = [
   },
 ]
 
-// ─── SEAT LAYOUT (Sala 3 - Unicentro Pasto - real data) ─────────
+// --- SEAT LAYOUT (synthetic, deterministic) ---
 
 interface RawSeat { rowIndex: number; columnIndex: number; id: string; status: number }
 

@@ -76,7 +76,7 @@ export function PanelSeatPicker() {
   const setCheckoutStep = useCinemaStore((s) => s.setCheckoutStep);
 
   const movieId = selectedMovieId || "the-mandalorian-and-grogu";
-  const cinemaId = "2400";
+  const cinemaId = "1001";
   const screenNumber = 3;
 
   const { data: movie, isLoading: loadingMovie } = useMovie(movieId);

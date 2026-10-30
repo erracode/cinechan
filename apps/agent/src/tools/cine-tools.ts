@@ -3,7 +3,7 @@ import {
   ticketTypes, ticketPackages,
   concessionCategories, getSeatLayout,
   generateShowtimes, calculatePrice,
-} from "../mock/cinemark-data.js"
+} from "../mock/cinema-data.js"
 import type { Movie, Showtime, Cinema, Promotion, ScreenFormat, Language, ConcessionItem, ConcessionCategory, TicketType } from "@cinechan/shared"
 
 export const getMovies = async (city?: string, format?: ScreenFormat, language?: Language, isPremiere?: boolean, genre?: string) => {

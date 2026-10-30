@@ -7,7 +7,7 @@ import {
   getSeatLayout, generateShowtimes,
   ticketTypes, ticketPackages, calculatePrice,
   concessionCategories,
-} from "./mock/cinemark-data.js";
+} from "./mock/cinema-data.js";
 import type { ScreenFormat, Language } from "@cinechan/shared";
 
 const TTS_MODEL = "@cf/deepgram/aura-2-es";
