@@ -1,0 +1,1 @@
+export { useCinemaStore } from "./cinema";
