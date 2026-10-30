@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { cn } from "../../lib/utils";
 import { useSeatLayout, useMovie, useShowtimes } from "#/lib/hooks/useCinemaData";
 import { useCinemaStore } from "#/store/cinema";
-import { Calendar, Users, MapPin, Loader2, ChevronRight, Play } from "lucide-react";
+import { Calendar, Users, Loader2, ChevronRight, Play } from "lucide-react";
 import { nextStep } from "#/lib/checkout-machine";
 
 const SeatIcon = ({
@@ -74,7 +74,6 @@ export function PanelSeatPicker() {
   const selectedShowtimeId = useCinemaStore((s) => s.selectedShowtimeId);
   const toggleSeat = useCinemaStore((s) => s.toggleSeat);
   const setCheckoutStep = useCinemaStore((s) => s.setCheckoutStep);
-  const setAgentCommentary = useCinemaStore((s) => s.setAgentCommentary);
 
   const movieId = selectedMovieId || "the-mandalorian-and-grogu";
   const cinemaId = "2400";
@@ -112,11 +111,6 @@ export function PanelSeatPicker() {
   }
 
   const handleContinue = () => {
-    setAgentCommentary(
-      selectedSeats.length > 0
-        ? `${selectedSeats.length} asiento(s) seleccionado(s). ¿Quieres agregar confitería antes de pagar?`
-        : "No seleccionaste asientos, pero puedes continuar igual.",
-    );
     setCheckoutStep(nextStep("seat-select"));
   };
 

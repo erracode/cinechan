@@ -1,15 +1,13 @@
 import { useMovie, useShowtimes } from "#/lib/hooks/useCinemaData";
 import { useCinemaStore } from "#/store/cinema";
-import { Star, Clock, Calendar, MapPin, ChevronRight, Loader2, ExternalLink } from "lucide-react";
+import { Star, Clock, Calendar, MapPin, Loader2, ExternalLink } from "lucide-react";
 import { cn } from "#/lib/utils";
 import { nextStep } from "#/lib/checkout-machine";
 
 export function MovieDetailCard() {
   const selectedMovieId = useCinemaStore((s) => s.selectedMovieId);
-  const selectedCinemaId = useCinemaStore((s) => s.selectedCinemaId);
   const setCheckoutStep = useCinemaStore((s) => s.setCheckoutStep);
   const setSelectedShowtime = useCinemaStore((s) => s.setSelectedShowtime);
-  const setAgentCommentary = useCinemaStore((s) => s.setAgentCommentary);
 
   const { data: movie, isLoading: loadingMovie } = useMovie(selectedMovieId || "");
   const { data: showtimesData, isLoading: loadingShowtimes } = useShowtimes(
@@ -141,9 +139,6 @@ export function MovieDetailCard() {
                           key={st.id}
                           onClick={() => {
                             setSelectedShowtime(st.id);
-                            setAgentCommentary(
-                              `Horario seleccionado: ${time} en ${st.format} ${st.language}. Ahora elige cuántas boletas necesitas.`,
-                            );
                             setCheckoutStep(nextStep("showtime-select"));
                           }}
                           className={cn(

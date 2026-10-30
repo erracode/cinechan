@@ -1,22 +1,5 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+﻿import React, { useEffect, useRef, useState, useMemo } from 'react';
 
-const DEFAULT_CONFIG = {
-  position: 'bottom',
-  strength: 2,
-  height: '6rem',
-  divCount: 5,
-  exponential: false,
-  zIndex: 1000,
-  animated: false,
-  duration: '0.3s',
-  easing: 'ease-out',
-  opacity: 1,
-  curve: 'linear',
-  responsive: false,
-  target: 'parent',
-  className: '',
-  style: {}
-};
 
 const CURVE_FUNCTIONS = {
   linear: (p: number) => p,

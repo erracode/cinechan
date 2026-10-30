@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-import ThemeToggle from "../components/ThemeToggle";
 import { getQueryClient } from "../lib/query-client";
 import "../lib/pixi-setup";
 

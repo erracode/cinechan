@@ -16,9 +16,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 export function ConcessionsPicker() {
   const { data, isLoading } = useConcessions();
   const addConcession = useCinemaStore((s) => s.addConcession);
-  const cart = useCinemaStore((s) => s.cart);
   const setCheckoutStep = useCinemaStore((s) => s.setCheckoutStep);
-  const setAgentCommentary = useCinemaStore((s) => s.setAgentCommentary);
 
   const categories = (data?.categories as any[]) || [];
   const [activeCategory, setActiveCategory] = useState(categories[0]?.id || "");
@@ -28,7 +26,7 @@ export function ConcessionsPicker() {
   const items = activeCat?.items || [];
 
   const totalItems = Object.values(quantities).reduce((sum, q) => sum + q, 0);
-  const totalPrice = items.reduce((sum, item) => sum + (item.price || 0) * (quantities[item.id] || 0), 0);
+  const totalPrice = items.reduce((sum: number, item: any) => sum + (item.price || 0) * (quantities[item.id] || 0), 0);
 
   if (isLoading) {
     return (
@@ -58,11 +56,6 @@ export function ConcessionsPicker() {
         });
       }
     });
-    setAgentCommentary(
-      totalItems > 0
-        ? `${totalItems} item(s) de confitería agregados. ¡Todo listo para el pago!`
-        : "Sin confitería, también está bien. Vamos al pago.",
-    );
     setCheckoutStep(nextStep("concessions"));
   };
 

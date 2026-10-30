@@ -1,4 +1,4 @@
-import * as React from "react"
+﻿import * as React from "react"
 import { Check, ChevronRight, MapPin } from "lucide-react"
 import { cn } from "#/lib/utils"
 
@@ -115,16 +115,6 @@ export function Cascader({
   const displayText = selectedLabels.length > 0 ? selectedLabels.join(" / ") : placeholder
 
   const visibleLevels = activePath.length > 0 ? activePath.length + 1 : 1
-  const hasMoreChildren = activePath.length > 0 && (() => {
-    let current = options
-    for (const val of activePath) {
-      const found = current.find((o) => o.value === val)
-      if (found?.children && found.children.length > 0) return true
-      if (found?.children) current = found.children
-      else return false
-    }
-    return false
-  })()
 
   return (
     <div ref={containerRef} className={cn("relative inline-block", className)}>
@@ -154,15 +144,6 @@ export function Cascader({
               <div key={level} className={cn("w-48 max-h-64 overflow-y-auto p-1", level > 0 && "border-l border-white/5")}>
                 {currentOptions.map((option) => {
                   const isActive = activePath[level] === option.value
-                  const isChildActive = level < activePath.length && activePath[level + 1] !== undefined && (() => {
-                    let co = options
-                    for (let i = 0; i <= level; i++) {
-                      const f = co.find((o) => o.value === activePath[i])
-                      if (f?.children && f.children.find((c) => c.value === option.value)) return true
-                      if (f?.children) co = f.children
-                    }
-                    return false
-                  })()
 
                   return (
                     <button

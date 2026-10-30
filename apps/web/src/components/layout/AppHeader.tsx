@@ -15,8 +15,7 @@ export function AppHeader() {
   const { data } = useCinemas(selectedCity || undefined);
 
   const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [showCinemaDropdown, setShowCinemaDropdown] = useState(false);
-  const [dark, setDark] = useState(true);
+  const [, setShowCinemaDropdown] = useState(false);  const [dark, setDark] = useState(true);
 
   const cinemas = (data?.cinemas as any[]) || [];
   const selectedCinema = cinemas.find((c) => c.id === selectedCinemaId);

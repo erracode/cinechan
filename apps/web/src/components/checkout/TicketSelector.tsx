@@ -4,7 +4,6 @@ import { useCinemaStore } from "#/store/cinema";
 import { Loader2, Minus, Plus, Info, ChevronRight } from "lucide-react";
 import { cn } from "#/lib/utils";
 import { nextStep } from "#/lib/checkout-machine";
-import type { CartItem } from "#/store/cinema";
 
 const TICKET_DESCRIPTIONS: Record<string, string> = {
   general: "Boleto estándar para cualquier persona. Incluye acceso a la sala y formato seleccionado.",
@@ -17,9 +16,7 @@ const TICKET_DESCRIPTIONS: Record<string, string> = {
 export function TicketSelector() {
   const { data, isLoading } = useTicketTypes();
   const addTicket = useCinemaStore((s) => s.addTicket);
-  const cart = useCinemaStore((s) => s.cart);
   const setCheckoutStep = useCinemaStore((s) => s.setCheckoutStep);
-  const setAgentCommentary = useCinemaStore((s) => s.setAgentCommentary);
 
   const ticketTypes = (data?.ticketTypes as any[]) || [];
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -55,9 +52,6 @@ export function TicketSelector() {
         });
       }
     });
-    setAgentCommentary(
-      `${totalTickets} boleta(s) agregada(s). Ahora selecciona tus asientos en la sala. Los asientos del centro son los más populares.`,
-    );
     setCheckoutStep(nextStep("ticket-select"));
   };
 

@@ -26,7 +26,7 @@ export function LocationSelector() {
     }));
   }, [cinemas]);
 
-  const handleChange = (value: string, selectedOptions: CascaderOption[]) => {
+  const handleChange = (_value: string, selectedOptions: CascaderOption[]) => {
     const city = selectedOptions[0]?.label || null;
     const cinema = selectedOptions[1] || null;
 

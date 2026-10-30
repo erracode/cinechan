@@ -10,8 +10,6 @@ export type CheckoutStep =
   | "payment"
   | "success";
 
-export type AvatarMood = "idle" | "excited" | "helping" | "celebrating";
-
 export interface CartItem {
   ticketTypeId: string;
   ticketTypeName: string;
@@ -44,17 +42,13 @@ interface CinemaStore {
   selectedCity: string | null;
   selectedCinemaId: string | null;
   checkoutStep: CheckoutStep;
-  avatarMood: AvatarMood;
   cart: Cart;
-  agentCommentary: string;
 
   setSelectedMovie: (id: string | null) => void;
   setSelectedShowtime: (id: string | null) => void;
   setSelectedCity: (city: string | null) => void;
   setSelectedCinema: (cinemaId: string | null) => void;
   setCheckoutStep: (step: CheckoutStep) => void;
-  setAvatarMood: (mood: AvatarMood) => void;
-  setAgentCommentary: (text: string) => void;
   toggleSeat: (id: string) => void;
   addTicket: (item: CartItem) => void;
   removeTicket: (ticketTypeId: string) => void;
@@ -86,9 +80,7 @@ export const useCinemaStore = create<CinemaStore>()((set, get) => ({
   selectedCity: null,
   selectedCinemaId: null,
   checkoutStep: "idle",
-  avatarMood: "idle",
   cart: { ...emptyCart },
-  agentCommentary: "",
 
   setSelectedMovie: (id) =>
     set({
@@ -96,8 +88,6 @@ export const useCinemaStore = create<CinemaStore>()((set, get) => ({
       selectedShowtimeId: null,
       selectedSeats: [],
       checkoutStep: id ? "movie-info" : "idle",
-      avatarMood: id ? "excited" : "idle",
-      agentCommentary: "",
       cart: { ...emptyCart },
     }),
 
@@ -119,24 +109,7 @@ export const useCinemaStore = create<CinemaStore>()((set, get) => ({
     }
   },
 
-  setCheckoutStep: (step) => {
-    set({ checkoutStep: step });
-    const moodMap: Record<CheckoutStep, AvatarMood> = {
-      idle: "idle",
-      "movie-info": "excited",
-      "showtime-select": "helping",
-      "ticket-select": "helping",
-      "seat-select": "helping",
-      concessions: "helping",
-      payment: "helping",
-      success: "celebrating",
-    };
-    set({ avatarMood: moodMap[step] ?? "idle" });
-  },
-
-  setAvatarMood: (mood) => set({ avatarMood: mood }),
-
-  setAgentCommentary: (text) => set({ agentCommentary: text }),
+  setCheckoutStep: (step) => set({ checkoutStep: step }),
 
   toggleSeat: (id) =>
     set((state) => {
@@ -235,9 +208,7 @@ export const useCinemaStore = create<CinemaStore>()((set, get) => ({
       selectedCity: null,
       selectedCinemaId: null,
       checkoutStep: "idle",
-      avatarMood: "idle",
       cart: { ...emptyCart },
-      agentCommentary: "",
     }),
 
   resetCheckout: () =>
@@ -246,9 +217,7 @@ export const useCinemaStore = create<CinemaStore>()((set, get) => ({
       selectedShowtimeId: null,
       selectedSeats: [],
       checkoutStep: "idle",
-      avatarMood: "idle",
       cart: { ...emptyCart },
-      agentCommentary: "",
     }),
 }));
 

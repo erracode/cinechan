@@ -14,12 +14,36 @@ function seatStatus(raw: number): SeatStatus {
   return "available"
 }
 
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
-}
-
 function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v))
+}
+
+// ─── DETERMINISTIC DEMO RANDOMNESS ───────────────────────────────
+// The catalogue must be stable across requests so demos and tests are
+// reproducible (see ADR 0001). We derive pseudo-randomness from a seed
+// string instead of Math.random()/Date.
+
+/** Fixed date used as the default for showtime queries. */
+export const DEMO_DATE = "2026-11-05"
+
+/** FNV-1a 32-bit hash. Stable across runs and platforms. */
+function hashSeed(seed: string): number {
+  let h = 2166136261
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+/** Deterministic pick: same seed always returns the same element. */
+function pick<T>(arr: T[], seed: string): T {
+  return arr[hashSeed(seed) % arr.length]
+}
+
+/** Deterministic float in [0, 1). */
+function seededUnit(seed: string): number {
+  return hashSeed(seed) / 4294967296
 }
 
 // ─── CINEMAS ─────────────────────────────────────────────────────
@@ -543,7 +567,7 @@ export function generateShowtimes(
   format?: ScreenFormat,
   language?: Language,
 ): Showtime[] {
-  const targetDate = date ?? today()
+  const targetDate = date ?? DEMO_DATE
   const results: Showtime[] = []
 
   const movieFilter = movieId ? movies.filter(m => m.id === movieId) : movies
@@ -559,17 +583,18 @@ export function generateShowtimes(
 
       if (langs.length === 0 || fmts.length === 0) continue
 
-      const screen = pickScreen(cinema, fmts[0])
+      const screen = pickScreen(cinema, fmts[0], `${cinema.id}-${movie.id}`)
       if (!screen) continue
 
       const intervals = generateTimeSlots(targetDate, movie.duration, screen.number)
-      const todayFactor = targetDate === today() ? 0.7 : 0.85
+      const todayFactor = targetDate === DEMO_DATE ? 0.7 : 0.85
 
       for (const dt of intervals) {
         const validFmts = fmts.filter(f => screen.formats.includes(f))
-        const fmt = validFmts.length > 0 ? pick(validFmts) : pick(fmts)
-        const lang = pick(langs)
-        const occup = Math.floor(Math.random() * Math.floor(screen.totalSeats * (1 - todayFactor)))
+        const seed = `${cinema.id}-${movie.id}-${screen.number}-${dt}`
+        const fmt = validFmts.length > 0 ? pick(validFmts, `${seed}-fmt`) : pick(fmts, `${seed}-fmt`)
+        const lang = pick(langs, `${seed}-lang`)
+        const occup = Math.floor(seededUnit(`${seed}-occ`) * Math.floor(screen.totalSeats * (1 - todayFactor)))
         const free = clamp(screen.totalSeats - occup, 0, screen.totalSeats)
 
         results.push({
@@ -612,9 +637,10 @@ function matchFormats(movie: Movie, cinema: Cinema, filter?: ScreenFormat): Scre
   return available
 }
 
-function pickScreen(cinema: Cinema, format: ScreenFormat): CinemaScreen | undefined {
+function pickScreen(cinema: Cinema, format: ScreenFormat, seed: string): CinemaScreen | undefined {
   const candidates = cinema.screens.filter(s => s.formats.includes(format))
-  return candidates[Math.floor(Math.random() * candidates.length)]
+  if (candidates.length === 0) return undefined
+  return pick(candidates, `${seed}-screen`)
 }
 
 function generateTimeSlots(dateStr: string, duration: number, screenNum: number): string[] {
@@ -623,7 +649,8 @@ function generateTimeSlots(dateStr: string, duration: number, screenNum: number)
   for (const h of times) {
     const offset = screenNum % 3
     const minutes = offset * 15
-    if (slots.length < 4 && Math.random() > 0.3) {
+    // Deterministic slot selection: stable for a given date/screen.
+    if (slots.length < 4 && seededUnit(`${dateStr}-${screenNum}-${h}`) > 0.3) {
       slots.push(`${dateStr}T${String(h).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`)
     }
   }
@@ -635,10 +662,6 @@ function basePrice(format: ScreenFormat): number {
     "2D": 10.00, "3D": 12.00, "XD": 13.00, "DBOX": 15.00, "PREMIUM": 12.50,
   }
   return prices[format] ?? 10.00
-}
-
-function today(): string {
-  return new Date().toISOString().slice(0, 10)
 }
 
 // ─── PRICE CALC ──────────────────────────────────────────────────

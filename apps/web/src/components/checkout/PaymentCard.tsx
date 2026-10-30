@@ -2,13 +2,11 @@ import { useCinemaStore } from "#/store/cinema";
 import { CreditCard, Wallet, Ticket, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "#/lib/utils";
 import { useState } from "react";
-import { nextStep } from "#/lib/checkout-machine";
 
 export function PaymentCard() {
   const cart = useCinemaStore((s) => s.cart);
   const selectedSeats = useCinemaStore((s) => s.selectedSeats);
   const setCheckoutStep = useCinemaStore((s) => s.setCheckoutStep);
-  const setAgentCommentary = useCinemaStore((s) => s.setAgentCommentary);
 
   const [paymentMethod, setPaymentMethod] = useState<string>("card");
   const [processing, setProcessing] = useState(false);
@@ -21,7 +19,6 @@ export function PaymentCard() {
     setProcessing(true);
     setTimeout(() => {
       setProcessing(false);
-      setAgentCommentary("¡Pago exitoso! Tu compra ha sido procesada. ¡Disfruta la película!");
       setCheckoutStep("success");
     }, 2000);
   };

@@ -1,7 +1,6 @@
 import { useShowtimes } from "#/lib/hooks/useCinemaData";
 import { useCinemaStore } from "#/store/cinema";
-import { Calendar, MapPin, Loader2, ChevronRight } from "lucide-react";
-import { cn } from "#/lib/utils";
+import { Calendar, MapPin, Loader2 } from "lucide-react";
 import { nextStep } from "#/lib/checkout-machine";
 
 export function ShowtimePicker() {
@@ -9,7 +8,6 @@ export function ShowtimePicker() {
   const selectedCinemaId = useCinemaStore((s) => s.selectedCinemaId);
   const setSelectedShowtime = useCinemaStore((s) => s.setSelectedShowtime);
   const setCheckoutStep = useCinemaStore((s) => s.setCheckoutStep);
-  const setAgentCommentary = useCinemaStore((s) => s.setAgentCommentary);
 
   const { data: showtimesData, isLoading } = useShowtimes(
     selectedMovieId ? { movieId: selectedMovieId, cinemaId: selectedCinemaId || undefined } : undefined,
@@ -64,9 +62,6 @@ export function ShowtimePicker() {
                         key={st.id}
                         onClick={() => {
                           setSelectedShowtime(st.id);
-                          setAgentCommentary(
-                            `Perfecto, horario de ${time} seleccionado. Ahora elige el tipo de boleta: General, Niño, Adulto Mayor, o Gold si eres miembro Cine Club.`,
-                          );
                           setCheckoutStep(nextStep("showtime-select"));
                         }}
                         className="flex flex-col items-center px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-primary/30 hover:bg-primary/10 transition-all min-w-[80px]"
