@@ -2,7 +2,7 @@
 
 Asistente de cine conversacional con IA, personaje Live2D animado y voz en español.
 
-[![CI](https://github.com/erracode/cinechan/actions/workflows/ci.yml/badge.svg)](https://github.com/erracode/cinechan/actions/workflows/ci.yml)
+![status](https://img.shields.io/badge/status-local%20demo-blue)
 
 ## Qué hace
 
