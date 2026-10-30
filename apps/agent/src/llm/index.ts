@@ -1,196 +1,163 @@
-import { generateText } from "@xsai/generate-text";
-import { tool } from "@xsai/tool";
-import * as v from "valibot";
-import {
-  getMovies,
-  getShowtimes,
-  getCinemas,
-  getPromotions,
-  getSeats,
-  getTicketTypes,
-  getConcessions,
-  getRecommendations,
-  getMovieDetails,
-} from "../tools/cine-tools.js";
+/**
+ * Cinechan agent — LLM layer.
+ *
+ * Primary path: Cloudflare Workers AI via the `AI` binding (`env.AI.run`).
+ * No external API keys, inference stays inside Cloudflare's network.
+ * See docs/adr/0001-cloudflare-workers-ai-migration.md
+ *
+ * gpt-oss-20b speaks the OpenAI chat-completions shape:
+ *   - tools must be nested: { type: "function", function: { name, ... } }
+ *   - tool_calls arrive under choices[0].message.tool_calls
+ *   - each call's `arguments` is a JSON *string*
+ * Verified against the live binding, not just the docs.
+ */
 
-const CINECHAN_SYSTEM_PROMPT = `Eres Cinechan (シネちゃん), una asistente de cine amable y entusiasta de Cinemark.
+import { tools, toolsByName } from "./tools.js";
 
-Tu personalidad:
-- Eres una vendedora de cine que ama las películas
-- Usas emojis de cine como 🎬🍿🎥
-- Eres amable pero no excesivamente formal
-- Recomiendas películas como una amiga que trabaja en el cine
-- Respondes SIEMPRE en español
-- Comenta sobre las acciones del usuario: cuando selecciona una película, da datos curiosos o menciona reviews; cuando elige boletas, explica los tipos; cuando ve confitería, sugiere combos
+export const DEFAULT_MODEL = "@cf/openai/gpt-oss-20b";
+const MAX_STEPS = 4;
 
-Herramientas disponibles:
-- get_movies(city?, format?, language?, isPremiere?, genre?): Ver películas con filtros
-- get_showtimes(movie_id?, cinema_id?, date?, format?, language?): Ver horarios con filtros
-- get_cinemas(city?): Ver cines (filtrar por ciudad)
-- get_promotions(type?, bank_bin?): Ver promociones y combos
-- get_recommendations(genre?): Recomendaciones de películas
-- get_movie_details(movie_id): Detalles completos de una película
-- get_seat_layout(cinema_id, screen_number): Ver mapa de asientos de una sala
-- get_ticket_types(cinema_id?, format?): Ver tipos de boleto y precios
-- get_concessions(category?): Ver productos de confitería
+/**
+ * Workers AI defaults completion tokens to 256, which truncates mid-list
+ * (finish_reason "length") on catalogue-sized answers. 1024 measured enough
+ * for the largest reply with headroom.
+ */
+const MAX_TOKENS = 1024;
 
-IMPORTANTE: Usa las herramientas cuando necesites información real. No inventes datos.
+/**
+ * Persona + behaviour. Kept deliberately short: the tool catalogue is
+ * already sent as JSON Schema, so re-listing it here only burned tokens.
+ */
+export const CINECHAN_SYSTEM_PROMPT = `Eres Cinechan, asistente de cine de Cinemark. Respondes siempre en español, con tono cercano y entusiasta, breve (2-4 frases).
 
-MARKERS ESPECIALES para respuestas enriquecidas:
-Cuando recomiendes o menciones una película, usa el marker [movie:ID] justo después del nombre.
-Ejemplo: "Te recomiendo [movie:dune-part-2] que tiene un rating de 8.5"
-El marker se reemplazará automáticamente con una tarjeta interactiva de la película.
+Usa las herramientas para obtener datos reales: nunca inventes películas, horarios, precios ni promociones. Si falta un dato, llama a la herramienta correspondiente.
 
-IDs de películas disponibles: dune-part-2, mortal-kombat-2, las-ovejas-detectives, billie-eilish-tour-3d, iron-maiden, michael, diablo-viste-a-la-moda-2, super-mario-galaxy, la-posesion-de-la-momia, the-amazing-digital-circus, txt-moa-con-in-japan, the-mandalorian-and-grogu, top-gun-40, top-gun-maverick-re`;
+Cuando menciones una película, escribe \`[movie:ID]\` justo después del título para que la UI renderice la tarjeta. Ejemplo: "Te recomiendo [movie:dune-part-2]".
 
-export async function chat(message: string) {
-  const provider = pickProvider();
+IDs válidos: mortal-kombat-2, las-ovejas-detectives, billie-eilish-tour-3d, iron-maiden, michael, diablo-viste-a-la-moda-2, super-mario-galaxy, la-posesion-de-la-momia, the-amazing-digital-circus, txt-moa-con-in-japan, the-mandalorian-and-grogu, top-gun-40, top-gun-maverick-re`;
 
-  const tools = await Promise.all([
-    tool({
-      name: "get_movies",
-      description: "Obtiene películas en cartelera con filtros opcionales por ciudad, formato, idioma, estreno o género",
-      parameters: v.object({
-        city: v.optional(v.string()),
-        format: v.optional(v.union([v.literal("2D"), v.literal("3D"), v.literal("XD"), v.literal("DBOX"), v.literal("PREMIUM")])),
-        language: v.optional(v.union([v.literal("Doblada"), v.literal("Subtitulada")])),
-        is_premiere: v.optional(v.union([v.literal("true"), v.literal("false")])),
-        genre: v.optional(v.string()),
-      }),
-      execute: async ({ city, format, language, is_premiere, genre }) => {
-        return JSON.stringify(await getMovies(
-          city, format as any, language as any,
-          is_premiere ? is_premiere === "true" : undefined,
-          genre,
-        ));
-      },
-    }),
-    tool({
-      name: "get_showtimes",
-      description: "Obtiene horarios de funciones con filtros por película, cine, fecha, formato o idioma",
-      parameters: v.object({
-        movie_id: v.optional(v.string()),
-        cinema_id: v.optional(v.string()),
-        date: v.optional(v.string()),
-        format: v.optional(v.union([v.literal("2D"), v.literal("3D"), v.literal("XD"), v.literal("DBOX"), v.literal("PREMIUM")])),
-        language: v.optional(v.union([v.literal("Doblada"), v.literal("Subtitulada")])),
-      }),
-      execute: async ({ movie_id, cinema_id, date, format, language }) => {
-        return JSON.stringify(await getShowtimes(movie_id, cinema_id, date, format as any, language as any));
-      },
-    }),
-    tool({
-      name: "get_cinemas",
-      description: "Obtiene la lista de cines disponibles, opcionalmente filtrar por ciudad",
-      parameters: v.object({
-        city: v.optional(v.string()),
-      }),
-      execute: async ({ city }) => {
-        return JSON.stringify(await getCinemas(city));
-      },
-    }),
-    tool({
-      name: "get_promotions",
-      description: "Obtiene promociones activas, opcionalmente filtrar por tipo (discount, bank, loyalty) o BIN de tarjeta",
-      parameters: v.object({
-        type: v.optional(v.union([v.literal("discount"), v.literal("bank"), v.literal("loyalty")])),
-        bank_bin: v.optional(v.string()),
-      }),
-      execute: async ({ type, bank_bin }) => {
-        return JSON.stringify(await getPromotions(type, bank_bin));
-      },
-    }),
-    tool({
-      name: "get_recommendations",
-      description: "Obtiene recomendaciones de películas, opcionalmente filtrar por género",
-      parameters: v.object({
-        genre: v.optional(v.string()),
-      }),
-      execute: async ({ genre }) => {
-        return JSON.stringify(await getRecommendations(genre));
-      },
-    }),
-    tool({
-      name: "get_seat_layout",
-      description: "Obtiene el mapa de asientos de una sala específica de un cine",
-      parameters: v.object({
-        cinema_id: v.string(),
-        screen_number: v.number(),
-      }),
-      execute: async ({ cinema_id, screen_number }) => {
-        return JSON.stringify(await getSeats(cinema_id, screen_number));
-      },
-    }),
-    tool({
-      name: "get_ticket_types",
-      description: "Obtiene los tipos de boleto disponibles y sus precios, opcionalmente para un formato específico",
-      parameters: v.object({
-        cinema_id: v.optional(v.string()),
-        format: v.optional(v.union([v.literal("2D"), v.literal("3D"), v.literal("XD"), v.literal("DBOX"), v.literal("PREMIUM")])),
-      }),
-      execute: async ({ cinema_id, format }) => {
-        return JSON.stringify(await getTicketTypes(cinema_id, format as any));
-      },
-    }),
-    tool({
-      name: "get_concessions",
-      description: "Obtiene los productos de confitería, opcionalmente filtrar por categoría (combos, palomitas, bebidas, complementos, combos-especiales)",
-      parameters: v.object({
-        category: v.optional(v.string()),
-      }),
-      execute: async ({ category }) => {
-        return JSON.stringify(await getConcessions(category));
-      },
-    }),
-    tool({
-      name: "get_movie_details",
-      description: "Obtiene los detalles completos de una película específica por su ID",
-      parameters: v.object({
-        movie_id: v.string(),
-      }),
-      execute: async ({ movie_id }) => {
-        return JSON.stringify(await getMovieDetails(movie_id));
-      },
-    }),
-  ]);
-
-  const { text } = await generateText({
-    ...provider,
-    messages: [
-      { role: "system", content: CINECHAN_SYSTEM_PROMPT },
-      { role: "user", content: message },
-    ],
-    tools,
-    maxSteps: 5,
-  });
-
-  return text;
+/** Minimal shape of the Workers AI binding. */
+export interface AiBinding {
+  run: (model: string, input: Record<string, unknown>) => Promise<any>;
 }
 
-function pickProvider(): { model: string; baseURL: string; apiKey: string } {
-  const provider = process.env.LLM_PROVIDER || "ollama";
+interface WireMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+  tool_calls?: unknown[];
+  tool_call_id?: string;
+}
 
-  if (provider === "openai" || process.env.OPENAI_API_KEY) {
-    return {
-      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-      baseURL: process.env.OPENAI_URL || "https://api.openai.com/v1",
-      apiKey: process.env.OPENAI_API_KEY || "",
-    };
+interface WireToolCall {
+  id: string;
+  type?: string;
+  function: { name: string; arguments: string | Record<string, unknown> };
+}
+
+/** Workers AI rejects nulls for omitted args, and the model emits them. */
+function normalizeArgs(raw: unknown): Record<string, unknown> {
+  let parsed: unknown = raw;
+
+  if (typeof raw === "string") {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return {};
+    }
   }
 
-  if (provider === "groq" || process.env.GROQ_API_KEY) {
-    return {
-      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
-      baseURL: "https://api.groq.com/openai/v1",
-      apiKey: process.env.GROQ_API_KEY || "",
-    };
+  if (!parsed || typeof parsed !== "object") return {};
+
+  return Object.fromEntries(
+    Object.entries(parsed as Record<string, unknown>).filter(([, v]) => v !== null && v !== undefined),
+  );
+}
+
+function toolSchemas() {
+  return tools.map(({ name, description, parameters }) => ({
+    type: "function" as const,
+    function: { name, description, parameters },
+  }));
+}
+
+/**
+ * Runs the model with tool calling until it produces a final answer or
+ * MAX_STEPS is reached.
+ */
+export async function chat(
+  message: string,
+  ai: AiBinding,
+  model = DEFAULT_MODEL,
+): Promise<string> {
+  const messages: WireMessage[] = [
+    { role: "system", content: CINECHAN_SYSTEM_PROMPT },
+    { role: "user", content: message },
+  ];
+  const schemas = toolSchemas();
+
+  for (let step = 0; step < MAX_STEPS; step++) {
+    const result: any = await ai.run(model, { messages, tools: schemas, max_tokens: MAX_TOKENS });
+    const assistant = result?.choices?.[0]?.message;
+    const calls: WireToolCall[] = assistant?.tool_calls ?? [];
+
+    if (calls.length === 0) {
+      return String(assistant?.content ?? "").trim();
+    }
+
+    // The assistant turn must echo the calls so the model can match results.
+    messages.push({
+      role: "assistant",
+      content: typeof assistant?.content === "string" ? assistant.content : "",
+      tool_calls: calls,
+    });
+
+    for (const call of calls) {
+      const name = call.function?.name ?? "";
+      const tool = toolsByName.get(name);
+      const output = tool
+        ? await tool.execute(normalizeArgs(call.function?.arguments))
+        : JSON.stringify({ error: `unknown tool: ${name}` });
+
+      messages.push({
+        role: "tool",
+        tool_call_id: call.id,
+        content: output,
+      });
+    }
   }
 
+  // Step budget exhausted: one last plain turn, no tools, so the user
+  // always gets an answer instead of an error.
+  const fallback: any = await ai.run(model, { messages, max_tokens: MAX_TOKENS });
+  return String(fallback?.choices?.[0]?.message?.content ?? "").trim();
+}
+
+/** Local-dev adapter: Workers AI over its REST endpoint. */
+export function createRestBinding(
+  accountId: string,
+  apiToken: string,
+): AiBinding {
   return {
-    model: process.env.OLLAMA_MODEL || "qwen3:8b",
-    baseURL: process.env.OLLAMA_URL || "http://127.0.0.1:11434/v1",
-    apiKey: process.env.OLLAMA_API_KEY || "ollama",
+    async run(model, input) {
+      const res = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(input),
+        },
+      );
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        throw new Error(`Workers AI ${res.status}: ${body.slice(0, 300)}`);
+      }
+
+      const json: any = await res.json();
+      return json.result ?? json;
+    },
   };
 }
-
-export { CINECHAN_SYSTEM_PROMPT };

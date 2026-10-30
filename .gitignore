@@ -25,6 +25,7 @@ apps/agent/models/
 # Tooling caches / indexes
 .qartez
 .ccc
+.wrangler
 .claude/
 .continue/
 .junie/

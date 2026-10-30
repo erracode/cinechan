@@ -31,7 +31,8 @@ export interface VoicesResponse {
   }>;
 }
 
-const API_BASE = 'http://localhost:3003/api';
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:3003/api';
 
 export async function sendMessage(message: string): Promise<ChatResponse> {
   const res = await fetch(`${API_BASE}/chat`, {
@@ -49,21 +50,7 @@ export async function sendMessage(message: string): Promise<ChatResponse> {
   return res.json();
 }
 
-export async function getVoiceConfig(): Promise<VoiceConfig> {
-  const res = await fetch(`${API_BASE}/voice/config`);
-  if (!res.ok) {
-    throw new Error('Failed to fetch config');
-  }
-  return res.json();
-}
 
-export async function getVoices(): Promise<VoicesResponse> {
-  const res = await fetch(`${API_BASE}/voice/voices`);
-  if (!res.ok) {
-    throw new Error('Failed to fetch voices');
-  }
-  return res.json();
-}
 
 // ─── Cinema Data API ─────────────────────────────────────────────
 

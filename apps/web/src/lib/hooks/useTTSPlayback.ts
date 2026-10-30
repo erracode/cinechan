@@ -2,7 +2,9 @@
 
 import { useRef, useState, useCallback } from "react";
 
-const TTS_ENDPOINT = "http://localhost:3003/api/tts";
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:3003/api";
+const TTS_ENDPOINT = `${API_BASE}/tts`;
 
 export function useTTSPlayback() {
   const [isSpeaking, setIsSpeaking] = useState(false);

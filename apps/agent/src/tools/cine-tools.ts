@@ -19,7 +19,7 @@ export const getMovies = async (city?: string, format?: ScreenFormat, language?:
 
   if (format) filtered = filtered.filter(m => m.formats.includes(format))
   if (language) filtered = filtered.filter(m => m.languages.includes(language))
-  if (isPremiere !== undefined) filtered = filtered.filter(m => m.isPremiere === isPremiere)
+  if (isPremiere != null) filtered = filtered.filter(m => m.isPremiere === isPremiere)
   if (genre) filtered = filtered.filter(m => m.genre.toLowerCase() === genre.toLowerCase())
 
   return {

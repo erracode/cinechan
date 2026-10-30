@@ -1,0 +1,11 @@
+name = "cinechan-agent"
+main = "src/worker.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers AI binding — authenticates at account level, no API key needed.
+[ai]
+binding = "AI"
+
+[observability]
+enabled = true
