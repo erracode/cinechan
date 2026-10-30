@@ -98,11 +98,23 @@ export function createApp(env: Env = {}) {
         encoding: "mp3",
       });
 
-      const buffer = audio instanceof ArrayBuffer
-        ? Buffer.from(audio)
-        : audio?.audio
-          ? Buffer.from(audio.audio)
-          : Buffer.from(JSON.stringify(audio ?? ""));
+      // Workers AI returns a ReadableStream for audio models. Older shapes
+      // (ArrayBuffer / { audio }) are still accepted so this keeps working
+      // if Cloudflare changes the transport again.
+      let buffer: Buffer;
+      if (audio instanceof ArrayBuffer) {
+        buffer = Buffer.from(audio);
+      } else if (typeof audio?.getReader === "function") {
+        buffer = Buffer.from(await new Response(audio).arrayBuffer());
+      } else if (audio?.audio) {
+        buffer = Buffer.from(audio.audio);
+      } else {
+        throw new Error("TTS returned no audio payload");
+      }
+
+      if (buffer.length === 0) {
+        throw new Error("TTS returned an empty audio payload");
+      }
 
       return c.json({ audio: buffer.toString("base64"), format: "mp3" });
     } catch (error) {
